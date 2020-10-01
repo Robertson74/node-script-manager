@@ -1,61 +1,57 @@
 #!/usr/bin/env node
-const chalk = require('chalk');
-const fs = require('fs');
-const inquirer = require('inquirer');
-const { spawn } = require('child_process');
+"use strict";
+var fs = require('fs');
+var inquirer = require('inquirer');
+var spawn = require('child_process').spawn;
 inquirer.registerPrompt('search-list', require('inquirer-search-list'));
-
-const targetDir = '/' + process.argv[1].split('\/').slice(1, -1).join('/') + '/package.json';
-const spaceBufferCount = 5;
-
-fs.readFile('package.json', 'utf8' , (err, data) => {
-  if (err) {
-    console.error(`No package.json found at '${targetDir}' found`);
-    return;
-  }
-
-  const scripts = JSON.parse(data).scripts;
-  const longestScriptNameCount = Object.keys(scripts).reduce((accum, value) => {
-    return value.length > accum ? value.length : accum;
-  }, 0)
-  const scriptQuestions = Object.keys(scripts).map((scriptKey) => {
-    const scriptName = `${scriptKey}`;
-    let spaceBuffer = '';
-    while (scriptName.length + spaceBuffer.length < longestScriptNameCount + spaceBufferCount) {
-      spaceBuffer += ' ';
+var targetDir = '/' + process.argv[1].split('\/').slice(1, -1).join('/') + '/package.json';
+var spaceBufferCount = 5;
+var isYarn = process.argv.some(function (arg) {
+    return arg === '-y' || arg === '--yarn';
+});
+fs.readFile('package.json', 'utf8', function (err, data) {
+    if (err) {
+        console.error("No package.json found at '" + targetDir + "' found");
+        return;
     }
-    return {
-      name: chalk.cyan(scriptName) + spaceBuffer + chalk.blue(scripts[scriptKey]),
-      value: scriptName,
-    };
-  });
-
-  inquirer.prompt([
-    {
-      name: 'scriptName',
-      choices: scriptQuestions,
-      type: 'search-list',
-      message: 'Which script to run?',
-    },
-  ]).then((res) => {
-    let spacesSplit = '';
-    while (spacesSplit.length < spaceBufferCount) {
-      spacesSplit += ' ';
-    }
-    const scriptToRun = res.scriptName.split(spacesSplit)[0];
-    const runningScript = spawn('npm', ['run', scriptToRun]);
-
-    runningScript.stdout.on('data', (data) => {
-      process.stdout.write(data);
+    var scripts = JSON.parse(data).scripts;
+    var longestScriptNameCount = Object.keys(scripts).reduce(function (accum, value) {
+        return value.length > accum ? value.length : accum;
+    }, 0);
+    var scriptQuestions = Object.keys(scripts).map(function (scriptKey) {
+        var scriptName = "" + scriptKey;
+        var spaceBuffer = '';
+        while (scriptName.length + spaceBuffer.length < longestScriptNameCount + spaceBufferCount) {
+            spaceBuffer += ' ';
+        }
+        return {
+            name: scriptName + spaceBuffer + scripts[scriptKey],
+            value: scriptName,
+        };
     });
-
-    runningScript.stderr.on('data', (data) => {
-      process.stderr.write(data);
+    inquirer.prompt([
+        {
+            name: 'scriptName',
+            choices: scriptQuestions,
+            type: 'search-list',
+            message: 'Which script to run?',
+        },
+    ]).then(function (res) {
+        var spacesSplit = '';
+        while (spacesSplit.length < spaceBufferCount) {
+            spacesSplit += ' ';
+        }
+        var scriptToRun = res.scriptName.split(spacesSplit)[0];
+        var npmOrYarn = isYarn ? 'yarn' : 'npm';
+        var runningScript = spawn(npmOrYarn, ['run', scriptToRun]);
+        runningScript.stdout.on('data', function (data) {
+            process.stdout.write(data);
+        });
+        runningScript.stderr.on('data', function (data) {
+            process.stderr.write(data);
+        });
+        runningScript.on('close', function () {
+            // console.log(`child process exited with code ${code}`);
+        });
     });
-
-    runningScript.on('close', () => {
-      // console.log(`child process exited with code ${code}`);
-    });
-  });
-
-})
+});
