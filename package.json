@@ -3,7 +3,7 @@
   "bin": {
     "nsm": "./build/index.js"
   },
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "quickly execute package.json scripts",
   "main": "./build/index.js",
   "scripts": {
