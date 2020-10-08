@@ -1,11 +1,11 @@
 {
   "name": "@michaelrobertson74/nsm",
   "bin": {
-    "nsm": "./index.js"
+    "nsm": "./build/index.js"
   },
   "version": "0.0.3",
   "description": "quickly execute package.json scripts",
-  "main": "index.js",
+  "main": "./build/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "testScript": "echo 'You ran a script!'",
