@@ -26,7 +26,7 @@ fs.readFile('package.json', 'utf8', function (err, data) {
         }
         return {
             name: scriptName + spaceBuffer + scripts[scriptKey],
-            value: scriptName,
+            value: scriptName
         };
     });
     inquirer.prompt([
@@ -34,7 +34,7 @@ fs.readFile('package.json', 'utf8', function (err, data) {
             name: 'scriptName',
             choices: scriptQuestions,
             type: 'search-list',
-            message: 'Which script to run?',
+            message: 'Which script to run?'
         },
     ]).then(function (res) {
         var spacesSplit = '';
